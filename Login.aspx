@@ -115,27 +115,49 @@
 </head>
 <body class="d-flex text-center py-4 bg-body-tertiary">
     <main class="form-signin w-100 m-auto">
-        <form id="loginForm" runat="server">
+        <form id="usersForm" runat="server">
             <!-- TODO: Replace this with a photo of a guard dog eventually -->
             <img class="mb-4" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57" />
-            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
-            <div class="form-floating">
-                <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" placeholder="Username"></asp:TextBox><p></p>
-                <label for="txtUsername">Username</label>
-            </div>
-            <div class="form-floating">
-                <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="Password"></asp:TextBox>
-                <label for="txtPassword">Password</label>
-            </div>
+            <asp:Panel ID="pnlLogin" runat="server">
+                <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
-            <div class="form-check text-start my-3">
-                <input class="form-check-input" type="checkbox" value="remember-me" id="chkRememberMe" disabled />
-                <label class="form-check-label" for="chkRememberMe">Remember me</label>
-            </div>
-            <a href="Default.aspx">
-                <asp:Button ID="btnlogin" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnLogin_Click" Text="Sign In"/>
-            </a>
+                <div class="form-floating">
+                    <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" placeholder="Username"></asp:TextBox><p></p>
+                    <label for="txtUsername">Username</label>
+                </div>
+                <div class="form-floating">
+                    <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" placeholder="Password"></asp:TextBox>
+                    <label for="txtPassword">Password</label>
+                </div>
+
+                <div class="form-check text-start my-3">
+                    <input class="form-check-input" type="checkbox" value="remember-me" id="chkRememberMe" disabled />
+                    <label class="form-check-label" for="chkRememberMe">Remember me</label>
+                </div>
+                <a href="Default.aspx">
+                    <asp:Button ID="btnlogin" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnLogin_Click" Text="Sign In"/>
+                </a>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
+                <h1 class="h3 mb-3 fw-normal">Please register for an account here</h1>
+
+                <div class="form-floating">
+                    <asp:TextBox ID="txtUsernameReg" runat="server" CssClass="form-control" placeholder="Username"></asp:TextBox><p></p>
+                    <label for="txtUsernameReg">Username</label>
+                </div>
+                <div class="form-floating">
+                    <asp:TextBox ID="txtPasswordReg" runat="server" CssClass="form-control" TextMode="Password" placeholder="Password"></asp:TextBox>
+                    <label for="txtPasswordReg">Password</label>
+                </div>
+                <a href="Default.aspx">
+                    <asp:Button ID="btnRegister" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnRegister_Click" Text="Sign Up"/>
+                </a>
+            </asp:Panel>
+
+            <p style="padding-top: 5px;"><asp:Button ID="btnToggleForm" CssClass="btn btn-secondary w-100 py-2" runat="server" OnClick="BtnFormToggle_Click" Text="Create a new account"/></p>
+
             <p class="mt-5 mb-3 text-body-secondary">&copy; 2024 Dylan Aviles, All Rights Reserved</p>
         </form>
     </main>
