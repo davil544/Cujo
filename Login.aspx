@@ -135,9 +135,7 @@
                     <input class="form-check-input" type="checkbox" value="remember-me" id="chkRememberMe" disabled />
                     <label class="form-check-label" for="chkRememberMe">Remember me</label>
                 </div>
-                <a href="Default.aspx">
-                    <asp:Button ID="btnlogin" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnLogin_Click" Text="Sign In"/>
-                </a>
+                <asp:Button ID="btnlogin" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnLogin_Click" Text="Sign In"/>
             </asp:Panel>
 
             <asp:Panel ID="pnlRegistration" runat="server" Visible="false">
@@ -151,9 +149,7 @@
                     <asp:TextBox ID="txtPasswordReg" runat="server" CssClass="form-control" TextMode="Password" placeholder="Password"></asp:TextBox>
                     <label for="txtPasswordReg">Password</label>
                 </div>
-                <a href="Default.aspx">
-                    <asp:Button ID="btnRegister" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnRegister_Click" Text="Sign Up"/>
-                </a>
+                <asp:Button ID="btnRegister" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnRegister_Click" Text="Sign Up"/>
             </asp:Panel>
 
             <p style="padding-top: 5px;"><asp:Button ID="btnToggleForm" CssClass="btn btn-secondary w-100 py-2" runat="server" OnClick="BtnFormToggle_Click" Text="Create a new account"/></p>

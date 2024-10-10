@@ -16,9 +16,11 @@ namespace CujoPasswordManager.DataAccessLayer
 
         static AccountManager()
         {
-            //Instantiate creds here and scrub them for SQL command
+            // Instantiate creds here and scrub them for SQL command
             connectionString = ConfigurationManager.ConnectionStrings["SiteData"].ToString();
         }
+
+        // TODO:  Add encrypt / decrypt functions to store passwords and vault data securely
 
         public static Account Login(Account account)
         {
@@ -29,12 +31,11 @@ namespace CujoPasswordManager.DataAccessLayer
             }
 
             string status = ErrorHandler.wrongPass;
-            query = "SELECT Username, Password " +
+            query = "SELECT UserID, Username, Password " +
                 "FROM Users where Username = @Uname AND Password = @PW;";
             conn = new SqlConnection(connectionString);
             cmd = new SqlCommand(query, conn);
 
-            //New method of inserting parameters
             cmd.Parameters.AddWithValue("@Uname", account.username);
             cmd.Parameters.AddWithValue("@PW", account.password);
 
@@ -53,12 +54,12 @@ namespace CujoPasswordManager.DataAccessLayer
 
                             //This will run to retrieve the user's relevant data, change to vault data here
                             //account.FullName = reader["Name"].ToString();
-                            account.vault = new Vault();
-                            account.vault.Id = int.Parse(reader["ID"].ToString());
+                            /*account.vault = new Vault();
+                            account.vault.Id = int.Parse(reader["UserID"].ToString());
                             account.vault.Username = reader["Username"].ToString();
                             account.vault.Password = reader["Password"].ToString();
                             account.vault.URL = reader["URL"].ToString();
-                            account.vault.Notes = reader["Notes"].ToString();
+                            account.vault.Notes = reader["Notes"].ToString();*/
                         }
                     }
                 }
@@ -78,7 +79,7 @@ namespace CujoPasswordManager.DataAccessLayer
 
         public static string Register(Account account)
         {
-            //Checks if fields contain data, prevents blank usernames or passwords
+            // Checks if fields contain data, prevents blank usernames or passwords
             if (account.username.Equals("") || account.password.Equals(""))
             {
                 return ErrorHandler.empty;
@@ -89,8 +90,8 @@ namespace CujoPasswordManager.DataAccessLayer
             cmd = new SqlCommand(query, conn);
             string status = ErrorHandler.failed;
             int rows;
-            cmd.Parameters.Add("@Uname", SqlDbType.NVarChar, 50).Value = account.username;
-            cmd.Parameters.Add("@PW", SqlDbType.NVarChar, 50).Value = account.password;
+            cmd.Parameters.AddWithValue("@Uname", account.username);
+            cmd.Parameters.AddWithValue("@PW", account.password);
 
             try
             {
@@ -155,11 +156,18 @@ namespace CujoPasswordManager.DataAccessLayer
 
             return account.status;
         }
+
+        public static void initDB() {
+            query = "CREATE TABLE 'Users' ( 'Username' NVARCHAR(MAX) NOT NULL ,'Password' NVARCHAR(MAX) NOT NULL ,  \r\n`Age` INT NOT NULL ," +
+                "`Phone_No` VARCHAR(10) NOT NULL ,`Address` VARCHAR(100) NOT NULL ,\r\n PRIMARY KEY ('Username'));";
+            // TODO:  Add 2nd query to create vault table as well, get rid of extra fields
+            // To be continued once more progress has been made
+        }
         
-        //Will eventually use this for password hashing
+        // Will eventually use this for password hashing
         public void Password_Hash()
         {
-            //Hashing function for password, will likely move this out of the main soon
+            // Hashing function for password, will likely move this out of the main soon
             Console.Write("Enter a password: ");
             string password = Console.ReadLine();
 

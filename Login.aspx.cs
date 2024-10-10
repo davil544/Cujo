@@ -9,6 +9,10 @@ namespace CujoPasswordManager
         private Account account;
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["account"] != null)
+            {
+                Session["account"] = null;
+            }
             account = new Account();
         }
 
@@ -17,22 +21,36 @@ namespace CujoPasswordManager
             account.username = txtUsername.Text;    account.password = txtPassword.Text;
             // Maybe add rate limiting here?
             account = AccountManager.Login(account);
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + account.status + "');", true);
 
-            if (account.status == "success")
+            if (account.status == "valid")
             {
                 Session["account"] = account;
                 Response.Redirect("/");
+            }
+            else
+            {
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + account.status + "');", true);
             }
         }
 
         protected void BtnRegister_Click(object sender, EventArgs e)
         {
-            // Place Registration function Here
-            // Check if DB is initialized, do so if not
-            // Create Entries in DB for user credentials and vault data
+            // Check if DB is initialized one day, do so if not
+            // Create entries in DB for vault data
             account.username = txtUsernameReg.Text; account.password = txtPasswordReg.Text;
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + AccountManager.Register(account) + "');", true);
+            String status = AccountManager.Register(account);
+            
+
+            if (status == "success")
+            {
+                //Switches back to the login form
+                BtnFormToggle_Click(sender, e);
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('Your account has been created successfully!');", true);
+            }
+            else
+            {
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + status + "');", true);
+            }
         }
 
         protected void BtnFormToggle_Click(object sender, EventArgs e)

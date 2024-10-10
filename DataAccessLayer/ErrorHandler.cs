@@ -29,12 +29,13 @@ namespace CujoPasswordManager.DataAccessLayer
                     //This runs if the web server's IP address has not been whitelisted by the SQL server
                     return "You do not have permission to access the database!  Contact the DB admin for assistance!";
 
-                case 18456:
-                    //This runs if the login attempt fails, possibly means the Users database doesn't exist!  Replace this if so
-                    return "Login failed!";
+                //case 18456:
+                    // This runs if the database login attempt fails, possibly means the Users database doesn't exist!  Replace this if so
+                    // Disabled for debugging purposes
+                    //return "Login failed!";
             }
 
-            //This runs if a new code is found that has not been handled yet
+            // This runs if a new code is found that has not been handled yet
             throw new Exception(ex.Message);
         }
     }
