@@ -31,7 +31,7 @@ namespace CujoPasswordManager.DataAccessLayer
             }
 
             string status = ErrorHandler.wrongPass;
-            query = "SELECT UserID, Username, Password " +
+            query = "SELECT UserID, Username, Password, FullName " +
                 "FROM Users where Username = @Uname AND Password = @PW;";
             conn = new SqlConnection(connectionString);
             cmd = new SqlCommand(query, conn);
@@ -54,12 +54,11 @@ namespace CujoPasswordManager.DataAccessLayer
 
                             //This will run to retrieve the user's relevant data, change to vault data here
                             //account.FullName = reader["Name"].ToString();
-                            /*account.vault = new Vault();
-                            account.vault.Id = int.Parse(reader["UserID"].ToString());
-                            account.vault.Username = reader["Username"].ToString();
-                            account.vault.Password = reader["Password"].ToString();
-                            account.vault.URL = reader["URL"].ToString();
-                            account.vault.Notes = reader["Notes"].ToString();*/
+                            account.ID = int.Parse(reader["UserID"].ToString());
+                            account.name = reader["FullName"].ToString();
+                            /*account.Password = reader["Password"].ToString();
+                            account.URL = reader["URL"].ToString();
+                            account.Notes = reader["Notes"].ToString();*/
                         }
                     }
                 }
@@ -155,6 +154,125 @@ namespace CujoPasswordManager.DataAccessLayer
             }
 
             return account.status;
+        }
+
+        public static Vault[] GetVault(int UserID)
+        {
+            Vault[] vault = new Vault[1];
+
+            query = "SELECT * FROM Vault WHERE UserID = @userID;";
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@userID", UserID);
+
+            try
+            {
+                conn.Open();
+                reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    int i = 0;
+                    vault = new Vault[GetPasswordCount(UserID)];
+                    while (reader.Read())
+                    {
+                        vault[i] = new Vault();
+                        if (reader["ID"] != DBNull.Value)
+                        {
+                            vault[i].ID = (int)reader["ID"];
+                        }
+                        else
+                        {
+                            //This will cause a SQL exception, will be handled below
+                        }
+
+                        if (reader["ID"] != DBNull.Value)
+                        {
+                            vault[i].UserID = (int)reader["UserID"];
+                        }
+
+                        if (reader["URL"] != DBNull.Value)
+                        {
+                            vault[i].URL = reader["URL"].ToString();
+                        }
+                        else
+                        {
+                            //This code probably won't run ever, DB
+                            //doesn't allow null data in this field
+                            vault[i].URL = "No URL Entered";
+                        }
+
+                        if (reader["Username"] != DBNull.Value)
+                        {
+                            vault[i].Username = reader["Username"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Username = "No user entered";
+                        }
+
+                        if (reader["Password"] != DBNull.Value)
+                        {
+                            vault[i].Password = reader["Password"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Password = "password";
+                        }
+
+                        if (reader["Category"] != DBNull.Value)
+                        {
+                            vault[i].Category = reader["Category"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Category = String.Empty;
+                        }
+
+                        if (reader["Notes"] != DBNull.Value)
+                        {
+                            vault[i].Notes = reader["Notes"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Notes = string.Empty;
+                        }
+                        i++;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                vault[0] = new Vault { URL = ErrorHandler.SQL(ex) };
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return vault;
+        }
+
+        public static int GetPasswordCount(int UserID)
+        {
+            query = "SELECT COUNT(*) FROM Vault WHERE UserID = @userID;";
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@userID", UserID);
+            int count;
+
+            try
+            {
+                conn.Open();
+                count = (int)cmd.ExecuteScalar();
+            }
+            catch (SqlException)
+            {
+                count = 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return count;
         }
 
         public static void initDB() {

@@ -15,13 +15,22 @@ namespace CujoPasswordManager
     {
 
         /// <summary>
-        /// litVaultContents control.
+        /// btnAddEntry control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litVaultContents;
+        protected global::System.Web.UI.WebControls.Button btnAddEntry;
+
+        /// <summary>
+        /// pnlVaultContents control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlVaultContents;
 
         /// <summary>
         /// testURL control.

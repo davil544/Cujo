@@ -32,20 +32,21 @@
     </style>
 </asp:Content>
 <asp:Content ID="BodyContent" ContentPlaceHolderID="body" runat="server">
-    <br /> <!-- Main page headers go here -->
-    <div class="column-left">
+    <p></p><!-- Main page headers go here -->
+    <asp:Button CssClass="btn btn-success my-2 my-sm-0" Text="Add Entry" runat="server" ID="btnAddEntry" OnClick="BtnAddEntry_Click" CausesValidation="false" />
+    <!-- <div class="column-left">
         Menu
     </div>
     <div class="column-right">
         Vault Data 
-    </div>
+    </div> -->
     <br /><hr />
 
     <!-- User Data and Menu Items go here -->
     <div class="column-left">
         <table class="table">
             <tr style="border-bottom: 1px solid #000000;">
-                <td>Menu Items Here</td>
+                <td>Categories</td>
             </tr>
             <tr><td>All Items</td></tr>
         </table>
@@ -57,11 +58,12 @@
                 <td>Username</td>
                 <td>URL</td>
             </tr>
-            <tr>
-                <asp:Literal ID="litVaultContents" runat="server"><td>No Items Found</td></asp:Literal>
+             <asp:Panel ID="pnlVaultContents" runat="server"></asp:Panel>
+            <!-- <tr>
+                <td>No Items Found</td>
                 <td>SampleUser</td>
                 <td id="testURL" runat="server"> </td>
-            </tr>
+            </tr> -->
         </table>
     </div> <br /><br /><br />
     <!-- <br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TODO:<br />
