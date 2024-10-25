@@ -28,7 +28,7 @@ namespace CujoPasswordManager
                     {
                         litVaultEntries.Text += "<tr>\r\n" +
                             "                       <td>" + entry.ItemName + "</td>\r\n" +
-                            "                       <td>" + entry.Username + "Username</td>\r\n" +
+                            "                       <td>" + entry.Username + "</td>\r\n" +
                             "                       <td>" + CustomFunctions.TruncateString(entry.URL, 30) + "</td>\r\n" +
                             "                     </tr>";
                     }
