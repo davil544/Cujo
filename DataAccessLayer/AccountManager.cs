@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System;
 using CujoPasswordManager.DataModels;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Principal;
 
 namespace CujoPasswordManager.DataAccessLayer
 {
@@ -185,9 +186,9 @@ namespace CujoPasswordManager.DataAccessLayer
                             //This will cause a SQL exception, will be handled below
                         }
 
-                        if (reader["ID"] != DBNull.Value)
+                        if (reader["ItemName"] != DBNull.Value)
                         {
-                            vault[i].UserID = (int)reader["UserID"];
+                            vault[i].ItemName = reader["ItemName"].ToString();
                         }
 
                         if (reader["URL"] != DBNull.Value)
@@ -210,7 +211,7 @@ namespace CujoPasswordManager.DataAccessLayer
                             vault[i].Username = "No user entered";
                         }
 
-                        if (reader["Password"] != DBNull.Value)
+                        /*if (reader["Password"] != DBNull.Value)
                         {
                             vault[i].Password = reader["Password"].ToString();
                         }
@@ -235,7 +236,7 @@ namespace CujoPasswordManager.DataAccessLayer
                         else
                         {
                             vault[i].Notes = string.Empty;
-                        }
+                        }*/
                         i++;
                     }
                 }
@@ -249,6 +250,71 @@ namespace CujoPasswordManager.DataAccessLayer
                 conn.Close();
             }
             return vault;
+        }
+
+        public static Vault GetVault(int UserID, int EntryID)
+        {
+            Vault entry = new Vault();
+
+            query = "SELECT * FROM Vault WHERE UserID = @userID AND ID = @ID;";
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@userID", UserID);
+
+            try
+            {
+                conn.Open();
+                reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["ID"] != DBNull.Value)
+                        {
+                            entry.ID = (int)reader["ID"];
+                        }
+
+                        if (reader["ItemName"] != DBNull.Value)
+                        {
+                            entry.ItemName = reader["ItemName"].ToString();
+                        }
+
+                        if (reader["URL"] != DBNull.Value)
+                        {
+                            entry.URL = reader["URL"].ToString();
+                        }
+
+                        if (reader["Username"] != DBNull.Value)
+                        {
+                            entry.Username = reader["Username"].ToString();
+                        }
+
+                        if (reader["Password"] != DBNull.Value)
+                        {
+                            entry.Password = reader["Password"].ToString();
+                        }
+
+                        if (reader["Category"] != DBNull.Value)
+                        {
+                            entry.Category = reader["Category"].ToString();
+                        }
+
+                        if (reader["Notes"] != DBNull.Value)
+                        {
+                            entry.Notes = reader["Notes"].ToString();
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                entry = new Vault { URL = ErrorHandler.SQL(ex) };
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return entry;
         }
 
         public static int GetPasswordCount(int UserID)
@@ -273,6 +339,57 @@ namespace CujoPasswordManager.DataAccessLayer
                 conn.Close();
             }
             return count;
+        }
+
+        public static string AddVaultEntry(Vault entry, int userID)
+        {
+            if (entry.Username.Equals("") || entry.Password.Equals("") || userID.Equals(null))
+            {
+                return ErrorHandler.empty;
+            }
+
+            query = "INSERT INTO Vault (ItemName, UserID, Username, Password";
+            if (entry.URL != null) { query += ", URL"; }
+            if (entry.Category != null) { query += ", Category"; }
+            if (entry.Notes != null) { query += ", Notes"; }
+
+            query += ") VALUES (@Iname, @UserID, @Uname, @PW";
+            if (entry.URL != null) { query += ", @URL"; }
+            if (entry.Category != null) { query += ", @Cat"; }
+            if (entry.Notes != null) { query += ", @Notes"; }
+            query += ");";
+
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            string status = ErrorHandler.failed;
+            int rows;
+            cmd.Parameters.AddWithValue("@Iname", entry.ItemName);
+            cmd.Parameters.AddWithValue("@UserID", userID);
+            cmd.Parameters.AddWithValue("@Uname", entry.Username);
+            cmd.Parameters.AddWithValue("@PW", entry.Password);
+            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", entry.URL); }
+            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", entry.Category); }
+            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", entry.Notes); }
+
+            try
+            {
+                conn.Open();
+                rows = cmd.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    status = "success";
+                }
+            }
+            catch (SqlException ex)
+            {
+                status = ErrorHandler.SQL(ex);
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return status;
         }
 
         public static void initDB() {
