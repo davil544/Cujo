@@ -260,6 +260,7 @@ namespace CujoPasswordManager.DataAccessLayer
             conn = new SqlConnection(connectionString);
             cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@userID", UserID);
+            cmd.Parameters.AddWithValue("@ID", EntryID);
 
             try
             {

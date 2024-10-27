@@ -26,10 +26,10 @@ namespace CujoPasswordManager
                 {
                     if (entry != null)
                     {
-                        litVaultEntries.Text += "<tr>\r\n" +
-                            "                       <td>" + entry.ItemName + "</td>\r\n" +
-                            "                       <td>" + entry.Username + "</td>\r\n" +
-                            "                       <td>" + CustomFunctions.TruncateString(entry.URL, 30) + "</td>\r\n" +
+                        litVaultEntries.Text +=  "<tr>\r\n" +
+                            "                         <td><a href=\"EntryDetails.aspx?id=" + entry.ID + "\">" + entry.ItemName + "</a></td>\r\n" +
+                            "                         <td><a href=\"EntryDetails.aspx?id=" + entry.ID + "\">" + entry.Username + "</a></td>\r\n" +
+                            "                         <td><a href=\"EntryDetails.aspx?id=" + entry.ID + "\">" + CustomFunctions.TruncateString(entry.URL, 30) + "</a></td>\r\n" +
                             "                     </tr>";
                     }
                     else
