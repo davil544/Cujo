@@ -10,6 +10,7 @@ namespace CujoPasswordManager.DataAccessLayer
             failed = "Registration Failed! An unknown error has occured!",
             acctIssue = "There is an issue with your account, contact sitemaster for assistance!",
             invalidLoginToken = "Something went wrong, redirecting back to the login page...",
+            noResults = "No Results Found", noQuery = "No query entered",
             notPermitted = "You do not have permission to access this page!";
 
         public static string SQL(SqlException ex)

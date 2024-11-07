@@ -252,6 +252,103 @@ namespace CujoPasswordManager.DataAccessLayer
             return vault;
         }
 
+        public static Vault[] GetVault(int UserID, string SearchQuery)
+        {
+            Vault[] vault = new Vault[1];
+
+            //TODO:  Fix this so it actually works
+            query = "Select * from Vault WHERE UserID = @userID AND (ItemName like @query OR Username like @query OR URL like @query OR Category like @query);";
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@userID", UserID);
+            cmd.Parameters.AddWithValue("@query", "%" + SearchQuery + "%");  // %s are needed to search for partial matches
+
+            try
+            {
+                conn.Open();
+                reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    int i = 0;
+                    vault = new Vault[GetPasswordCount(UserID)]; //Maybe overload this to get search query count instead so I don't need that other if not null statement
+                    while (reader.Read())
+                    {
+                        vault[i] = new Vault();
+                        if (reader["ID"] != DBNull.Value)
+                        {
+                            vault[i].ID = (int)reader["ID"];
+                        }
+                        else
+                        {
+                            //This will cause a SQL exception, will be handled below
+                        }
+
+                        if (reader["ItemName"] != DBNull.Value)
+                        {
+                            vault[i].ItemName = reader["ItemName"].ToString();
+                        }
+
+                        if (reader["URL"] != DBNull.Value)
+                        {
+                            vault[i].URL = reader["URL"].ToString();
+                        }
+                        else
+                        {
+                            //This code probably won't run ever, DB
+                            //doesn't allow null data in this field
+                            vault[i].URL = "No URL Entered";
+                        }
+
+                        if (reader["Username"] != DBNull.Value)
+                        {
+                            vault[i].Username = reader["Username"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Username = "No user entered";
+                        }
+
+                        /*if (reader["Password"] != DBNull.Value)
+                        {
+                            vault[i].Password = reader["Password"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Password = "password";
+                        }
+
+                        if (reader["Category"] != DBNull.Value)
+                        {
+                            vault[i].Category = reader["Category"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Category = String.Empty;
+                        }
+
+                        if (reader["Notes"] != DBNull.Value)
+                        {
+                            vault[i].Notes = reader["Notes"].ToString();
+                        }
+                        else
+                        {
+                            vault[i].Notes = string.Empty;
+                        }*/
+                        i++;
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                vault[0] = new Vault { URL = ErrorHandler.SQL(ex) };
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return vault;
+        }
+
         public static Vault GetVault(int UserID, int EntryID)
         {
             Vault entry = new Vault();
