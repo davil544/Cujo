@@ -1,7 +1,6 @@
 ﻿using CujoPasswordManager.DataAccessLayer;
 using CujoPasswordManager.DataModels;
 using System;
-using System.Security.Principal;
 
 namespace CujoPasswordManager
 {
@@ -17,6 +16,9 @@ namespace CujoPasswordManager
             else
             {
                 account = (Account)Session["account"];
+
+                // If loading edit info here, load it from session variable then null it out for security
+                // Session["vaultEntry"] = null;
             }
         }
 
@@ -30,16 +32,22 @@ namespace CujoPasswordManager
             entry.URL = txtURL.Text;
             entry.Notes = txtNotes.Text;
 
-            //send data to db here
+            // send data to db here
             string status = AccountManager.AddVaultEntry(entry, account.ID);
             if (status == "success") {
-                Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('Password entry added successfully!');", true);
+                // Commented out as this doesn't work well with Response.Redirect()
+                // Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('Password entry added successfully!');", true);
+                Response.Redirect("/");
             }
             else
             {
                 Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + status + "');", true);
             }
-            Response.Redirect("/");
+        }
+
+        protected void BtnCancel_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("~/");
         }
     }
 }

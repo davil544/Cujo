@@ -16,7 +16,7 @@
         <asp:TextBox ID="txtCategory" runat="server" CssClass="form-control pwForm" placeholder="Category"></asp:TextBox>
         <asp:TextBox ID="txtNotes" runat="server" CssClass="form-control pwForm" placeholder="Notes" TextMode="MultiLine"></asp:TextBox>
         <br />
-        <asp:Button ID="btnSubmit" runat="server" CssClass="" Text="Submit" OnClick="BtnAdd_Click"></asp:Button>
-        <asp:Button ID="btnCancel" runat="server" CssClass="" Text="Cancel"></asp:Button>
+        <asp:Button ID="btnAdd" runat="server" Text="Add Entry" OnClick="BtnAdd_Click"></asp:Button>
+        <asp:Button ID="btnCancel" runat="server" Text="Cancel" OnClick="BtnCancel_Click"></asp:Button>
     </div>
 </asp:Content>
