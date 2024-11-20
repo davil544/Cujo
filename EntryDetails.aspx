@@ -9,6 +9,10 @@
                 <td><h5><asp:Label ID="lblName" runat="server"></asp:Label></h5></td>
             </tr>
             <tr>
+                <td><h3>URL:</h3></td>
+                <td><h5><asp:Label ID="lblURL" runat="server"></asp:Label></h5></td>
+            </tr>
+            <tr>
                 <td><h3>Username:</h3></td>
                 <td><h5><asp:Label ID="lblUser" runat="server"></asp:Label></h5></td>
             </tr>

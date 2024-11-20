@@ -12,7 +12,7 @@ namespace CujoPasswordManager
         {
             if (Session["account"] == null)
             {
-                Session["entryID"] = null;
+                Session["vaultEntry"] = null;
                 Response.Redirect("/Login.aspx");
             }
             else if (Request.QueryString["ID"] == "" || Request.QueryString["ID"] == null)
@@ -27,6 +27,7 @@ namespace CujoPasswordManager
                 entry = AccountManager.GetVault(account.ID, int.Parse(entryID));
 
                 lblName.Text = entry.ItemName;
+                lblURL.Text = entry.URL;
                 lblUser.Text = entry.Username;
                 lblCat.Text = entry.Category;
                 lblNotes.Text = entry.Notes;
@@ -50,7 +51,7 @@ namespace CujoPasswordManager
         protected void BtnEdit_Click(object sender, EventArgs e)
         {
             //pass entry data to add page via Add Entry page, possibly make a second form for edits
-            entry = (Vault)Session["vaultEntry"];
+            Session["vaultEntry"] = entry;
             Response.Redirect("/AddEntry.aspx");
         }
     }
