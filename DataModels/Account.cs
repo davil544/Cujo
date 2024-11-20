@@ -9,7 +9,7 @@
         public string status { get; set; }
 
         public Account() {
-            ID = 0;
+            //ID = 0;
             username = string.Empty;
             password = string.Empty;
             name = string.Empty;

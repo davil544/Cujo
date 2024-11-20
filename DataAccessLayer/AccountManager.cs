@@ -256,7 +256,6 @@ namespace CujoPasswordManager.DataAccessLayer
         {
             Vault[] vault = new Vault[1];
 
-            //TODO:  Fix this so it actually works
             query = "Select * from Vault WHERE UserID = @userID AND (ItemName like @query OR Username like @query OR URL like @query OR Category like @query);";
             conn = new SqlConnection(connectionString);
             cmd = new SqlCommand(query, conn);
@@ -351,7 +350,10 @@ namespace CujoPasswordManager.DataAccessLayer
 
         public static Vault GetVault(int UserID, int EntryID)
         {
-            Vault entry = new Vault();
+            Vault entry = new Vault
+            {
+                ID = EntryID
+            };
 
             query = "SELECT * FROM Vault WHERE UserID = @userID AND ID = @ID;";
             conn = new SqlConnection(connectionString);
@@ -367,9 +369,14 @@ namespace CujoPasswordManager.DataAccessLayer
                 {
                     while (reader.Read())
                     {
-                        if (reader["ID"] != DBNull.Value)
+                        if (reader["ID"] != DBNull.Value && (int)reader["ID"] != 0)
                         {
                             entry.ID = (int)reader["ID"];
+                        }
+
+                        if (reader["UserID"] != DBNull.Value)
+                        {
+                            entry.UserID = (int)reader["UserID"];
                         }
 
                         if (reader["ItemName"] != DBNull.Value)
@@ -480,6 +487,66 @@ namespace CujoPasswordManager.DataAccessLayer
             }
             catch (SqlException ex)
             {
+                status = ErrorHandler.SQL(ex);
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+            return status;
+        }
+
+        public static string UpdateVaultEntry(Vault entry, int userID)
+        {
+            if (entry.Username.Equals("") || entry.Password.Equals("") || userID.Equals(0))
+            {
+                return ErrorHandler.empty;
+            }
+            else if (entry.ID == 0)
+            {
+                return "Password ID not being passed to the DB, aborting!";
+            }
+
+            //Add check if every single field is blank, error out if so
+
+            /*query = "UPDATE Vault " +
+                 "SET Username = @Uname, Password = @PW " +
+                 "WHERE ID = @ID;"; */
+
+            query = "UPDATE Vault " +
+                "SET ItemName = @Iname, Username = @Uname, Password = @PW";  //Tweak This
+            if (entry.URL != null) { query += ", URL = @URL"; }
+            if (entry.Category != null) { query += ", Category = @Cat"; }
+            if (entry.Notes != null) { query += ", Notes = @Notes"; }
+
+            query += " WHERE ID = @ID;";
+
+            conn = new SqlConnection(connectionString);
+            cmd = new SqlCommand(query, conn);
+            string status = ErrorHandler.failed;
+            int rows;
+            cmd.Parameters.AddWithValue("@Iname", entry.ItemName);
+            cmd.Parameters.AddWithValue("@UserID", userID);
+            cmd.Parameters.AddWithValue("@ID", entry.ID);
+            cmd.Parameters.AddWithValue("@Uname", entry.Username);
+            cmd.Parameters.AddWithValue("@PW", entry.Password);
+            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", entry.URL); }
+            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", entry.Category); }
+            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", entry.Notes); }
+
+            try
+            {
+                conn.Open();
+                rows = cmd.ExecuteNonQuery();
+                if (rows > 0)
+                {
+                    status = "success";
+                }
+            }
+            catch (SqlException ex)
+            {
+                //throw new Exception(ex.Message);
                 status = ErrorHandler.SQL(ex);
             }
             finally
