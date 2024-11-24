@@ -5,7 +5,8 @@ using System.Security.Cryptography;
 using System;
 using CujoPasswordManager.DataModels;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Principal;
+using System.Text;
+using System.IO;
 
 namespace CujoPasswordManager.DataAccessLayer
 {
@@ -21,7 +22,7 @@ namespace CujoPasswordManager.DataAccessLayer
             connectionString = ConfigurationManager.ConnectionStrings["SiteData"].ToString();
         }
 
-        // TODO:  Add encrypt / decrypt functions to store passwords and vault data securely
+        // TODO:  Implement encrypt / decrypt functions to store passwords and vault data securely
 
         public static Account Login(Account account)
         {
@@ -563,7 +564,86 @@ namespace CujoPasswordManager.DataAccessLayer
             // TODO:  Add 2nd query to create vault table as well, get rid of extra fields
             // To be continued once more progress has been made
         }
-        
+
+        // TODO:  Write function to generate key with random salts to improve security for storing passwords
+        // TODO:  Switch to a more secure Cipher Mode, ECB is vulnerable to rainbow table attacks!
+        public static string Encrypt(string plainText, string key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                // Convert strings to byte arrays here to perform encryption
+                byte[] plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+
+                // Hash key here to increase security
+                var hash = new SHA256CryptoServiceProvider();
+                byte[] hashedKey = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
+
+                aes.Key = hashedKey;
+                aes.Mode = CipherMode.ECB;
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Obsolete code, may delete in a future update
+                /*using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    encryptedBytes = encryptor.TransformFinalBlock(plainTextByteArray, 0, plainTextByteArray.Length);
+                }*/
+
+                // Encryption is performed here
+                byte[] encryptedBytes = null;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(plainTextBytes, 0, plainTextBytes.Length);
+                    }
+
+                    encryptedBytes = ms.ToArray();
+                }
+
+                // Encode to string here to be stored properly
+                return Convert.ToBase64String(encryptedBytes);
+            }
+
+        }
+
+        public static string Decrypt(string cipherText, string key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                // Convert strings to byte arrays here to perform decryption
+                byte[] cipherBytes = Convert.FromBase64String(cipherText);
+
+                // Hash key here to increase security
+                var hash = new SHA256CryptoServiceProvider();
+                byte[] hashedKey = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
+
+                aes.Key = hashedKey;
+                aes.Mode = CipherMode.ECB;
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Obsolete code, may delete in a future update
+                /*using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                {
+                    decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+                }*/
+
+                // Decryption is performed here
+                byte[] decryptedBytes = null;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(cipherBytes, 0, cipherBytes.Length);
+                    }
+
+                    decryptedBytes = ms.ToArray();
+                }
+
+                // Decodes to string here to be displayed properly
+                return Encoding.UTF8.GetString(decryptedBytes);
+            }
+        }
+
         // Will eventually use this for password hashing
         public void Password_Hash()
         {
@@ -583,7 +663,7 @@ namespace CujoPasswordManager.DataAccessLayer
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
                 salt: salt,
-                prf: KeyDerivationPrf.HMACSHA1,
+                prf: KeyDerivationPrf.HMACSHA256,
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
             Console.WriteLine($"Hashed: {hashed}");
