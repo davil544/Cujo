@@ -4,7 +4,6 @@ using System.Data;
 using System.Security.Cryptography;
 using System;
 using CujoPasswordManager.DataModels;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Text;
 using System.IO;
 
@@ -565,108 +564,88 @@ namespace CujoPasswordManager.DataAccessLayer
             // To be continued once more progress has been made
         }
 
-        // TODO:  Write function to generate key with random salts to improve security for storing passwords
-        // TODO:  Switch to a more secure Cipher Mode, ECB is vulnerable to rainbow table attacks!
-        public static string Encrypt(string plainText, string key)
+        public static string Encrypt(string plaintext, string password)
         {
-            using (Aes aes = Aes.Create())
+            using (Aes encryptor = Aes.Create())
             {
-                // Convert strings to byte arrays here to perform encryption
-                byte[] plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+                // Convert the plaintext string to a byte array
+                byte[] plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
 
-                // Hash key here to increase security
-                var hash = new SHA256CryptoServiceProvider();
-                byte[] hashedKey = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
-
-                aes.Key = hashedKey;
-                aes.Mode = CipherMode.ECB;
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Obsolete code, may delete in a future update
-                /*using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                // Hashes the password for increased security
+                var hash = new SHA512CryptoServiceProvider();
+                byte[] hashedKeyArray = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+                string hashedPass = null;
+                foreach (byte thing in hashedKeyArray)
                 {
-                    encryptedBytes = encryptor.TransformFinalBlock(plainTextByteArray, 0, plainTextByteArray.Length);
-                }*/
-
-                // Encryption is performed here
-                byte[] encryptedBytes = null;
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(plainTextBytes, 0, plainTextBytes.Length);
-                    }
-
-                    encryptedBytes = ms.ToArray();
+                    hashedPass += thing.ToString("x2");
                 }
 
-                // Encode to string here to be stored properly
-                return Convert.ToBase64String(encryptedBytes);
-            }
-
-        }
-
-        public static string Decrypt(string cipherText, string key)
-        {
-            using (Aes aes = Aes.Create())
-            {
-                // Convert strings to byte arrays here to perform decryption
-                byte[] cipherBytes = Convert.FromBase64String(cipherText);
-
-                // Hash key here to increase security
-                var hash = new SHA256CryptoServiceProvider();
-                byte[] hashedKey = hash.ComputeHash(Encoding.UTF8.GetBytes(key));
-
-                aes.Key = hashedKey;
-                aes.Mode = CipherMode.ECB;
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Obsolete code, may delete in a future update
-                /*using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                // generate a 128-bit salt using a secure PRNG
+                byte[] salt = new byte[128 / 8];
+                using (var rng = RandomNumberGenerator.Create())
                 {
-                    decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
-                }*/
+                    rng.GetBytes(salt);
+                }
+                string saltBase64 = Convert.ToBase64String(salt);
 
-                // Decryption is performed here
-                byte[] decryptedBytes = null;
+                // Derive a new password using the PBKDF2 algorithm and a random salt
+                Rfc2898DeriveBytes passwordBytes = new Rfc2898DeriveBytes(hashedPass, salt);
+
+                // Use the password to encrypt the plaintext
+                encryptor.Key = passwordBytes.GetBytes(32);
+                encryptor.IV = passwordBytes.GetBytes(16);
+                encryptor.Mode = CipherMode.CBC;
+                encryptor.Padding = PaddingMode.PKCS7;
+
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
                     {
-                        cs.Write(cipherBytes, 0, cipherBytes.Length);
+                        cs.Write(plaintextBytes, 0, plaintextBytes.Length);
                     }
-
-                    decryptedBytes = ms.ToArray();
+                    return saltBase64 + Convert.ToBase64String(ms.ToArray());
                 }
-
-                // Decodes to string here to be displayed properly
-                return Encoding.UTF8.GetString(decryptedBytes);
             }
         }
 
-        // Will eventually use this for password hashing
-        public void Password_Hash()
+        public static string Decrypt(string ciphertext, string password)
         {
-            // Hashing function for password, will likely move this out of the main soon
-            Console.Write("Enter a password: ");
-            string password = Console.ReadLine();
-
-            // generate a 128-bit salt using a secure PRNG
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
+            using (Aes encryptor = Aes.Create())
             {
-                rng.GetBytes(salt);
-            }
-            Console.WriteLine($"Salt: {Convert.ToBase64String(salt)}");
+                // Convert the encrypted string to a byte array
+                byte[] encryptedBytes = Convert.FromBase64String(ciphertext.Remove(0, 24));
 
-            // derive a 256-bit subkey (use HMACSHA1 with 10,000 iterations)
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 10000,
-                numBytesRequested: 256 / 8));
-            Console.WriteLine($"Hashed: {hashed}");
+                // Hashes the password for increased security
+                var hash = new SHA512CryptoServiceProvider();
+                byte[] hashedKeyArray = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+                string hashedPass = null;
+                foreach (byte thing in hashedKeyArray)
+                {
+                    hashedPass += thing.ToString("x2");
+                }
+
+                // pull salt from the beginning of the string here
+                string saltBase64 = ciphertext.Remove(24);
+                byte[] salt = Convert.FromBase64String(saltBase64);
+
+                // Derive the password using the PBKDF2 algorithm
+                Rfc2898DeriveBytes passwordBytes = new Rfc2898DeriveBytes(hashedPass, salt);
+
+                // Use the password to decrypt the encrypted string
+                encryptor.Key = passwordBytes.GetBytes(32);
+                encryptor.IV = passwordBytes.GetBytes(16);
+                encryptor.Mode = CipherMode.CBC;
+                encryptor.Padding = PaddingMode.PKCS7;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(encryptedBytes, 0, encryptedBytes.Length);
+                    }
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
         }
     }
 }
