@@ -571,22 +571,16 @@ namespace CujoPasswordManager.DataAccessLayer
                 // Convert the plaintext string to a byte array
                 byte[] plaintextBytes = Encoding.UTF8.GetBytes(plaintext);
 
-                // Hashes the password for increased security
-                var hash = new SHA512CryptoServiceProvider();
-                byte[] hashedKeyArray = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                string hashedPass = null;
-                foreach (byte thing in hashedKeyArray)
-                {
-                    hashedPass += thing.ToString("x2");
-                }
-
                 // generate a 128-bit salt using a secure PRNG
                 byte[] salt = new byte[128 / 8];
                 using (var rng = RandomNumberGenerator.Create())
                 {
                     rng.GetBytes(salt);
                 }
-                string saltBase64 = Convert.ToBase64String(salt);
+                string saltBase64 = Convert.ToBase64String(salt),
+
+                // Hashes the password for increased security
+                hashedPass = CustomFunctions.HashToSHA512(password);
 
                 // Derive a new password using the PBKDF2 algorithm and a random salt
                 Rfc2898DeriveBytes passwordBytes = new Rfc2898DeriveBytes(hashedPass, salt);
@@ -616,16 +610,10 @@ namespace CujoPasswordManager.DataAccessLayer
                 byte[] encryptedBytes = Convert.FromBase64String(ciphertext.Remove(0, 24));
 
                 // Hashes the password for increased security
-                var hash = new SHA512CryptoServiceProvider();
-                byte[] hashedKeyArray = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                string hashedPass = null;
-                foreach (byte thing in hashedKeyArray)
-                {
-                    hashedPass += thing.ToString("x2");
-                }
+                string hashedPass = CustomFunctions.HashToSHA512(password),
 
                 // pull salt from the beginning of the string here
-                string saltBase64 = ciphertext.Remove(24);
+                saltBase64 = ciphertext.Remove(24);
                 byte[] salt = Convert.FromBase64String(saltBase64);
 
                 // Derive the password using the PBKDF2 algorithm

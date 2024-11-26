@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CujoPasswordManager.DataAccessLayer
 {
@@ -12,6 +14,18 @@ namespace CujoPasswordManager.DataAccessLayer
                 truncated += "...";
             }
             return truncated;
+        }
+
+        public static string HashToSHA512(string msg)
+        {
+            var hash = new SHA512CryptoServiceProvider();
+            byte[] hashedArray = hash.ComputeHash(Encoding.UTF8.GetBytes(msg));
+            string hashed = null;
+            foreach (byte thing in hashedArray)
+            {
+                hashed += thing.ToString("x2");
+            }
+            return hashed;
         }
     }
 }
