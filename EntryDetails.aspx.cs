@@ -24,7 +24,7 @@ namespace CujoPasswordManager
             {
                 account = (Account)Session["account"];
                 string entryID = Request.QueryString["ID"];
-                entry = AccountManager.GetVault(account.ID, int.Parse(entryID));
+                entry = AccountManager.GetVault(account.ID, int.Parse(entryID), account.password);
 
                 lblName.Text = entry.ItemName;
                 lblURL.Text = entry.URL;

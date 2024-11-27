@@ -148,6 +148,12 @@
                 <div class="form-floating">
                     <asp:TextBox ID="txtPasswordReg" runat="server" CssClass="form-control" TextMode="Password" placeholder="Password"></asp:TextBox>
                     <label for="txtPasswordReg">Password</label>
+                    <!-- TODO:  Add warning about remembering master password, if this is forgotten, the Vault data will be irrecoverable! -->
+                </div>
+                <div class="form-floating">
+                    <asp:TextBox ID="txtNameReg" runat="server" CssClass="form-control" placeholder="Full Name (Optional)"></asp:TextBox>
+                    <label for="txtNameReg">Full Name (Optional)</label>
+                    <br />
                 </div>
                 <asp:Button ID="btnRegister" CssClass="btn btn-primary w-100 py-2" runat="server" OnClick="BtnRegister_Click" Text="Sign Up"/>
             </asp:Panel>

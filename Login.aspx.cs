@@ -37,7 +37,7 @@ namespace CujoPasswordManager
         {
             // Check if DB is initialized one day, do so if not
             // Create entries in DB for vault data
-            account.username = txtUsernameReg.Text; account.password = txtPasswordReg.Text;
+            account.username = txtUsernameReg.Text; account.password = txtPasswordReg.Text; account.name = txtNameReg.Text;
             String status = AccountManager.Register(account);
             
 

@@ -15,11 +15,14 @@ namespace CujoPasswordManager
             }
             else
             {
-                account = (Account)Session["account"];
+                account = (Account)Session["account"]; string previousPage = null;
+                try
+                {
+                    previousPage = Request.UrlReferrer.LocalPath;
+                }
+                catch (NullReferenceException) { } //In production, this will stop the server from crashing if this page is directly navigated to with vaultEntry data
 
-                // If loading edit info here, load it from session variable then null it out for security
-                
-                if ((Vault)Session["vaultEntry"] != null)
+                if ((Vault)Session["vaultEntry"] != null && (previousPage == "/AddEntry.aspx" || previousPage == "/EntryDetails.aspx"))
                 {
                     pnlAdd.Visible = false;
                     pnlUpdate.Visible = true;
@@ -37,11 +40,10 @@ namespace CujoPasswordManager
                         txtEditURL.Text = entry.URL;
                         txtEditNotes.Text = entry.Notes;
                     }
-
-                    /* if (IsPostBack)
-                    {
-                        Session["vaultEntry"] = null;
-                    } */
+                }
+                else
+                {
+                    Session["vaultEntry"] = null;
                 }
             }
         }
@@ -57,7 +59,7 @@ namespace CujoPasswordManager
             entry.Notes = txtNotes.Text;
 
             // send data to db here
-            string status = AccountManager.AddVaultEntry(entry, account.ID);
+            string status = AccountManager.AddVaultEntry(entry, account.ID, account.password);
             if (status == "success") {
                 // Commented out as this doesn't work well with Response.Redirect()
                 // Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('Password entry added successfully!');", true);
@@ -84,11 +86,12 @@ namespace CujoPasswordManager
             //TODO: Add null check for pw field, if so tell the function to skip updating the password, possibly remove null check from it after
 
             // send data to db here
-            string status = AccountManager.UpdateVaultEntry(updatedEntry, account.ID);
+            string status = AccountManager.UpdateVaultEntry(updatedEntry, account.ID, account.password);
             if (status == "success")
             {
                 // Commented out as this doesn't work well with Response.Redirect()
                 // Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('Password entry added successfully!');", true);
+                Session["vaultEntry"] = null;
                 Response.Redirect("/");
             }
             else
@@ -99,6 +102,7 @@ namespace CujoPasswordManager
 
         protected void BtnCancel_Click(object sender, EventArgs e)
         {
+            Session["vaultEntry"] = null;
             Response.Redirect("~/");
         }
     }

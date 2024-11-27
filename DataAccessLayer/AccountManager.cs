@@ -21,8 +21,6 @@ namespace CujoPasswordManager.DataAccessLayer
             connectionString = ConfigurationManager.ConnectionStrings["SiteData"].ToString();
         }
 
-        // TODO:  Implement encrypt / decrypt functions to store passwords and vault data securely
-
         public static Account Login(Account account)
         {
             if (account.username.Equals("") || account.password.Equals(""))
@@ -30,6 +28,8 @@ namespace CujoPasswordManager.DataAccessLayer
                 account.status = ErrorHandler.empty;
                 return account;
             }
+
+            account.password = CustomFunctions.HashToSHA512(account.password);
 
             string status = ErrorHandler.wrongPass;
             query = "SELECT UserID, Username, Password, FullName " +
@@ -53,13 +53,10 @@ namespace CujoPasswordManager.DataAccessLayer
                             //This runs when a valid match is found in the database
                             status = "valid";
 
-                            //This will run to retrieve the user's relevant data, change to vault data here
-                            //account.FullName = reader["Name"].ToString();
+                            //This will run to retrieve the user's account data
                             account.ID = int.Parse(reader["UserID"].ToString());
+                            //account.password = reader["Password"].ToString();
                             account.name = reader["FullName"].ToString();
-                            /*account.Password = reader["Password"].ToString();
-                            account.URL = reader["URL"].ToString();
-                            account.Notes = reader["Notes"].ToString();*/
                         }
                     }
                 }
@@ -85,13 +82,18 @@ namespace CujoPasswordManager.DataAccessLayer
                 return ErrorHandler.empty;
             }
 
-            query = "INSERT INTO Users (Username, Password) VALUES (@Uname, @PW);";
+            query = "INSERT INTO Users (Username, Password";
+            if (account.name != "") { query += ", FullName"; }
+            query += ") VALUES (@Uname, @PW";
+            if (account.name != "") { query += ", @Name"; }
+            query += ");";
             conn = new SqlConnection(connectionString);
             cmd = new SqlCommand(query, conn);
             string status = ErrorHandler.failed;
             int rows;
             cmd.Parameters.AddWithValue("@Uname", account.username);
-            cmd.Parameters.AddWithValue("@PW", account.password);
+            cmd.Parameters.AddWithValue("@PW", CustomFunctions.HashToSHA512(account.password));
+            if (account.name != "") { cmd.Parameters.AddWithValue("@Name", account.name); }
 
             try
             {
@@ -131,10 +133,9 @@ namespace CujoPasswordManager.DataAccessLayer
             account.status = ErrorHandler.failed;
             int rows;
 
+            cmd.Parameters.Add("@Uname", SqlDbType.NVarChar, 50).Value = account.username;
             cmd.Parameters.Add("@Name", SqlDbType.NVarChar, 50).Value = account.name;
             cmd.Parameters.Add("@PW", SqlDbType.NVarChar, 50).Value = account.password;
-
-
 
             try
             {
@@ -157,7 +158,7 @@ namespace CujoPasswordManager.DataAccessLayer
             return account.status;
         }
 
-        public static Vault[] GetVault(int UserID)
+        public static Vault[] GetVault(int UserID, string encryptionKey)
         {
             Vault[] vault = new Vault[1];
 
@@ -181,62 +182,22 @@ namespace CujoPasswordManager.DataAccessLayer
                         {
                             vault[i].ID = (int)reader["ID"];
                         }
-                        else
-                        {
-                            //This will cause a SQL exception, will be handled below
-                        }
 
                         if (reader["ItemName"] != DBNull.Value)
                         {
-                            vault[i].ItemName = reader["ItemName"].ToString();
+                            vault[i].ItemName = Decrypt(reader["ItemName"].ToString(), encryptionKey);
                         }
 
                         if (reader["URL"] != DBNull.Value)
                         {
-                            vault[i].URL = reader["URL"].ToString();
-                        }
-                        else
-                        {
-                            //This code probably won't run ever, DB
-                            //doesn't allow null data in this field
-                            vault[i].URL = "No URL Entered";
+                            vault[i].URL = Decrypt(reader["URL"].ToString(), encryptionKey);
                         }
 
                         if (reader["Username"] != DBNull.Value)
                         {
-                            vault[i].Username = reader["Username"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Username = "No user entered";
+                            vault[i].Username = Decrypt(reader["Username"].ToString(), encryptionKey);
                         }
 
-                        /*if (reader["Password"] != DBNull.Value)
-                        {
-                            vault[i].Password = reader["Password"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Password = "password";
-                        }
-
-                        if (reader["Category"] != DBNull.Value)
-                        {
-                            vault[i].Category = reader["Category"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Category = String.Empty;
-                        }
-
-                        if (reader["Notes"] != DBNull.Value)
-                        {
-                            vault[i].Notes = reader["Notes"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Notes = string.Empty;
-                        }*/
                         i++;
                     }
                 }
@@ -252,7 +213,7 @@ namespace CujoPasswordManager.DataAccessLayer
             return vault;
         }
 
-        public static Vault[] GetVault(int UserID, string SearchQuery)
+        public static Vault[] GetVault(int UserID, string SearchQuery, string encryptionKey)
         {
             Vault[] vault = new Vault[1];
 
@@ -277,62 +238,22 @@ namespace CujoPasswordManager.DataAccessLayer
                         {
                             vault[i].ID = (int)reader["ID"];
                         }
-                        else
-                        {
-                            //This will cause a SQL exception, will be handled below
-                        }
 
                         if (reader["ItemName"] != DBNull.Value)
                         {
-                            vault[i].ItemName = reader["ItemName"].ToString();
+                            vault[i].ItemName = Decrypt(reader["ItemName"].ToString(), encryptionKey);
                         }
 
                         if (reader["URL"] != DBNull.Value)
                         {
-                            vault[i].URL = reader["URL"].ToString();
-                        }
-                        else
-                        {
-                            //This code probably won't run ever, DB
-                            //doesn't allow null data in this field
-                            vault[i].URL = "No URL Entered";
+                            vault[i].URL = Decrypt(reader["URL"].ToString(), encryptionKey);
                         }
 
                         if (reader["Username"] != DBNull.Value)
                         {
-                            vault[i].Username = reader["Username"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Username = "No user entered";
+                            vault[i].Username = Decrypt(reader["Username"].ToString(), encryptionKey);
                         }
 
-                        /*if (reader["Password"] != DBNull.Value)
-                        {
-                            vault[i].Password = reader["Password"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Password = "password";
-                        }
-
-                        if (reader["Category"] != DBNull.Value)
-                        {
-                            vault[i].Category = reader["Category"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Category = String.Empty;
-                        }
-
-                        if (reader["Notes"] != DBNull.Value)
-                        {
-                            vault[i].Notes = reader["Notes"].ToString();
-                        }
-                        else
-                        {
-                            vault[i].Notes = string.Empty;
-                        }*/
                         i++;
                     }
                 }
@@ -348,7 +269,7 @@ namespace CujoPasswordManager.DataAccessLayer
             return vault;
         }
 
-        public static Vault GetVault(int UserID, int EntryID)
+        public static Vault GetVault(int UserID, int EntryID, string encryptionKey)
         {
             Vault entry = new Vault
             {
@@ -381,32 +302,32 @@ namespace CujoPasswordManager.DataAccessLayer
 
                         if (reader["ItemName"] != DBNull.Value)
                         {
-                            entry.ItemName = reader["ItemName"].ToString();
+                            entry.ItemName = Decrypt(reader["ItemName"].ToString(), encryptionKey);
                         }
 
                         if (reader["URL"] != DBNull.Value)
                         {
-                            entry.URL = reader["URL"].ToString();
+                            entry.URL = Decrypt(reader["URL"].ToString(), encryptionKey);
                         }
 
                         if (reader["Username"] != DBNull.Value)
                         {
-                            entry.Username = reader["Username"].ToString();
+                            entry.Username = Decrypt(reader["Username"].ToString(), encryptionKey);
                         }
 
                         if (reader["Password"] != DBNull.Value)
                         {
-                            entry.Password = reader["Password"].ToString();
+                            entry.Password = Decrypt(reader["Password"].ToString(), encryptionKey);
                         }
 
                         if (reader["Category"] != DBNull.Value)
                         {
-                            entry.Category = reader["Category"].ToString();
+                            entry.Category = Decrypt(reader["Category"].ToString(), encryptionKey);
                         }
 
                         if (reader["Notes"] != DBNull.Value)
                         {
-                            entry.Notes = reader["Notes"].ToString();
+                            entry.Notes = Decrypt(reader["Notes"].ToString(), encryptionKey);
                         }
                     }
                 }
@@ -446,7 +367,7 @@ namespace CujoPasswordManager.DataAccessLayer
             return count;
         }
 
-        public static string AddVaultEntry(Vault entry, int userID)
+        public static string AddVaultEntry(Vault entry, int userID, string encryptionKey)
         {
             if (entry.Username.Equals("") || entry.Password.Equals("") || userID.Equals(null))
             {
@@ -468,13 +389,13 @@ namespace CujoPasswordManager.DataAccessLayer
             cmd = new SqlCommand(query, conn);
             string status = ErrorHandler.failed;
             int rows;
-            cmd.Parameters.AddWithValue("@Iname", entry.ItemName);
+            cmd.Parameters.AddWithValue("@Iname", Encrypt(entry.ItemName, encryptionKey));
             cmd.Parameters.AddWithValue("@UserID", userID);
-            cmd.Parameters.AddWithValue("@Uname", entry.Username);
-            cmd.Parameters.AddWithValue("@PW", entry.Password);
-            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", entry.URL); }
-            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", entry.Category); }
-            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", entry.Notes); }
+            cmd.Parameters.AddWithValue("@Uname", Encrypt(entry.Username, encryptionKey));
+            cmd.Parameters.AddWithValue("@PW", Encrypt(entry.Password, encryptionKey));
+            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", Encrypt(entry.URL, encryptionKey)); }
+            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", Encrypt(entry.Category, encryptionKey)); }
+            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", Encrypt(entry.Notes, encryptionKey)); }
 
             try
             {
@@ -497,7 +418,7 @@ namespace CujoPasswordManager.DataAccessLayer
             return status;
         }
 
-        public static string UpdateVaultEntry(Vault entry, int userID)
+        public static string UpdateVaultEntry(Vault entry, int userID, string encryptionKey)
         {
             if (entry.Username.Equals("") || entry.Password.Equals("") || userID.Equals(0))
             {
@@ -526,14 +447,14 @@ namespace CujoPasswordManager.DataAccessLayer
             cmd = new SqlCommand(query, conn);
             string status = ErrorHandler.failed;
             int rows;
-            cmd.Parameters.AddWithValue("@Iname", entry.ItemName);
+            cmd.Parameters.AddWithValue("@Iname", Encrypt(entry.ItemName, encryptionKey));
             cmd.Parameters.AddWithValue("@UserID", userID);
             cmd.Parameters.AddWithValue("@ID", entry.ID);
-            cmd.Parameters.AddWithValue("@Uname", entry.Username);
-            cmd.Parameters.AddWithValue("@PW", entry.Password);
-            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", entry.URL); }
-            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", entry.Category); }
-            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", entry.Notes); }
+            cmd.Parameters.AddWithValue("@Uname", Encrypt(entry.Username, encryptionKey));
+            cmd.Parameters.AddWithValue("@PW", Encrypt(entry.Password, encryptionKey));
+            if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", Encrypt(entry.URL, encryptionKey)); }
+            if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", Encrypt(entry.Category, encryptionKey)); }
+            if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", Encrypt(entry.Notes, encryptionKey)); }
 
             try
             {
