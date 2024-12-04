@@ -24,7 +24,7 @@
             Update Password Entry:
             <asp:TextBox ID="txtEditItemName" runat="server" CssClass="form-control pwForm" placeholder="Item name"></asp:TextBox>
             <asp:TextBox ID="txtEditUserName" runat="server" CssClass="form-control pwForm" placeholder="Username"></asp:TextBox>
-            <asp:TextBox ID="txtEditPassword" runat="server" CssClass="form-control pwForm" placeholder="Item Password" TextMode="Password"></asp:TextBox>
+            <asp:TextBox ID="txtEditPassword" runat="server" CssClass="form-control pwForm" placeholder="Item Password (Unchanged if left empty)" TextMode="Password"></asp:TextBox>
             <asp:TextBox ID="txtEditURL" runat="server" CssClass="form-control pwForm" placeholder="URL" TextMode="Url"></asp:TextBox>
             <asp:TextBox ID="txtEditCategory" runat="server" CssClass="form-control pwForm" placeholder="Category"></asp:TextBox>
             <asp:TextBox ID="txtEditNotes" runat="server" CssClass="form-control pwForm" placeholder="Notes" TextMode="MultiLine"></asp:TextBox>

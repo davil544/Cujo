@@ -420,7 +420,7 @@ namespace CujoPasswordManager.DataAccessLayer
 
         public static string UpdateVaultEntry(Vault entry, int userID, string encryptionKey)
         {
-            if (entry.Username.Equals("") || entry.Password.Equals("") || userID.Equals(0))
+            if (entry.Username.Equals("") || userID <= (0))
             {
                 return ErrorHandler.empty;
             }
@@ -429,18 +429,12 @@ namespace CujoPasswordManager.DataAccessLayer
                 return "Password ID not being passed to the DB, aborting!";
             }
 
-            //Add check if every single field is blank, error out if so
-
-            /*query = "UPDATE Vault " +
-                 "SET Username = @Uname, Password = @PW " +
-                 "WHERE ID = @ID;"; */
-
             query = "UPDATE Vault " +
-                "SET ItemName = @Iname, Username = @Uname, Password = @PW";  //Tweak This
+                "SET ItemName = @Iname, Username = @Uname"; 
+            if (!entry.Password.Equals("")) { query += ", Password = @PW"; }
             if (entry.URL != null) { query += ", URL = @URL"; }
             if (entry.Category != null) { query += ", Category = @Cat"; }
             if (entry.Notes != null) { query += ", Notes = @Notes"; }
-
             query += " WHERE ID = @ID;";
 
             conn = new SqlConnection(connectionString);
@@ -451,7 +445,7 @@ namespace CujoPasswordManager.DataAccessLayer
             cmd.Parameters.AddWithValue("@UserID", userID);
             cmd.Parameters.AddWithValue("@ID", entry.ID);
             cmd.Parameters.AddWithValue("@Uname", Encrypt(entry.Username, encryptionKey));
-            cmd.Parameters.AddWithValue("@PW", Encrypt(entry.Password, encryptionKey));
+            if (!entry.Password.Equals("")) { cmd.Parameters.AddWithValue("@PW", Encrypt(entry.Password, encryptionKey)); }
             if (entry.URL != null) { cmd.Parameters.AddWithValue("@URL", Encrypt(entry.URL, encryptionKey)); }
             if (entry.Category != null) { cmd.Parameters.AddWithValue("@Cat", Encrypt(entry.Category, encryptionKey)); }
             if (entry.Notes != null) { cmd.Parameters.AddWithValue("@Notes", Encrypt(entry.Notes, encryptionKey)); }
@@ -467,7 +461,6 @@ namespace CujoPasswordManager.DataAccessLayer
             }
             catch (SqlException ex)
             {
-                //throw new Exception(ex.Message);
                 status = ErrorHandler.SQL(ex);
             }
             finally
