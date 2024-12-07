@@ -36,7 +36,7 @@ namespace CujoPasswordManager
                     {
                         txtEditItemName.Text = entry.ItemName;
                         txtEditUserName.Text = entry.Username;
-                        //txtEditPassword.Text = entry.Password;
+                        txtEditPassword.Attributes.Add("value", entry.Password);
                         txtEditCategory.Text = entry.Category;
                         txtEditURL.Text = entry.URL;
                         txtEditNotes.Text = entry.Notes;
@@ -152,17 +152,33 @@ namespace CujoPasswordManager
 
         protected void BtnShowPass_CLick(object sender, EventArgs e)
         {
+            const string hide = "Hide Password", show = "Show Password";
             if (pnlAdd.Visible)
             {
                 if (txtPassword.TextMode == TextBoxMode.Password)
                 {
                     txtPassword.TextMode = TextBoxMode.SingleLine;
-                    btnShowPass.Text = "Hide Password";
+                    btnShowPass.Text = hide;
                 }
                 else
                 {
+                    txtPassword.Attributes.Add("value", txtEditPassword.Text);
                     txtPassword.TextMode = TextBoxMode.Password;
-                    btnShowPass.Text = "Show Password";
+                    btnShowPass.Text = show;
+                }
+            }
+            else
+            {
+                if (txtEditPassword.TextMode == TextBoxMode.Password)
+                {
+                    txtEditPassword.TextMode = TextBoxMode.SingleLine;
+                    btnShowPass.Text = hide;
+                }
+                else
+                {
+                    txtEditPassword.Attributes.Add("value", txtEditPassword.Text);
+                    txtEditPassword.TextMode = TextBoxMode.Password;
+                    btnShowPass.Text = show;
                 }
             }
             
