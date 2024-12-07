@@ -1,7 +1,6 @@
 ﻿using CujoPasswordManager.DataAccessLayer;
 using CujoPasswordManager.DataModels;
 using System;
-using System.Security.Principal;
 
 namespace CujoPasswordManager
 {
@@ -22,27 +21,32 @@ namespace CujoPasswordManager
             string query = Request.QueryString["query"];
             if (query != null && query != "")
             {
-                //TODO:  Fix search query so it actually works
-                litSearchQuery.Text = query;
-                litResults.Text = br;
-                Vault[] entries = AccountManager.GetVault(account.ID, query);
-                if (entries[0] == null)
+                litSearchQuery.Text = query;    litResults.Text = br;
+                Vault[] entries = AccountManager.GetVault(account.ID, account.password), searchResults = null;
+                if (entries[0] != null)
                 {
-                    //This runs when a query returns 0 movies
-                    litResults.Text += ErrorHandler.noResults;
+                    searchResults = Array.FindAll(entries, s => s.ItemName.Contains(query) || s.Username.Contains(query) || s.URL.Contains(query) || s.Category.Contains(query));
                 }
-                else foreach (Vault entry in entries)
+
+                if (searchResults != null && searchResults.Length > 0)
+                {
+                    foreach (Vault entry in searchResults)
                     {
                         if (entry != null) { litResults.Text += "<a href=\"EntryDetails.aspx?ID=" + entry.ID + "\">" + entry.ItemName + "</a><br />"; }
                     }
-                //Session["query"] = null;
+                }
+                else
+                {
+                    // This runs when there are no results found
+                    litResults.Text += ErrorHandler.noResults;
+                }
+                entries = null; searchResults = null;
             }
             else
             {
-                //This runs when the page is loaded directly, without a search query
+                // This runs when the page is loaded directly, without a search query
                 heading2.Attributes["hidden"] = "hidden";
                 litResults.Text = br + ErrorHandler.noQuery;
-                //litResults.Text = ErrorHandler.noEntries;
             }
         }
     }

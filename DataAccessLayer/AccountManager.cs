@@ -213,62 +213,6 @@ namespace CujoPasswordManager.DataAccessLayer
             return vault;
         }
 
-        public static Vault[] GetVault(int UserID, string SearchQuery, string encryptionKey)
-        {
-            Vault[] vault = new Vault[1];
-
-            query = "Select * from Vault WHERE UserID = @userID AND (ItemName like @query OR Username like @query OR URL like @query OR Category like @query);";
-            conn = new SqlConnection(connectionString);
-            cmd = new SqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@userID", UserID);
-            cmd.Parameters.AddWithValue("@query", "%" + SearchQuery + "%");  // %s are needed to search for partial matches
-
-            try
-            {
-                conn.Open();
-                reader = cmd.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    int i = 0;
-                    vault = new Vault[GetPasswordCount(UserID)]; //Maybe overload this to get search query count instead so I don't need that other if not null statement
-                    while (reader.Read())
-                    {
-                        vault[i] = new Vault();
-                        if (reader["ID"] != DBNull.Value)
-                        {
-                            vault[i].ID = (int)reader["ID"];
-                        }
-
-                        if (reader["ItemName"] != DBNull.Value)
-                        {
-                            vault[i].ItemName = Decrypt(reader["ItemName"].ToString(), encryptionKey);
-                        }
-
-                        if (reader["URL"] != DBNull.Value)
-                        {
-                            vault[i].URL = Decrypt(reader["URL"].ToString(), encryptionKey);
-                        }
-
-                        if (reader["Username"] != DBNull.Value)
-                        {
-                            vault[i].Username = Decrypt(reader["Username"].ToString(), encryptionKey);
-                        }
-
-                        i++;
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                vault[0] = new Vault { URL = ErrorHandler.SQL(ex) };
-            }
-            finally
-            {
-                conn.Close();
-            }
-            return vault;
-        }
-
         public static Vault GetVault(int UserID, int EntryID, string encryptionKey)
         {
             Vault entry = new Vault

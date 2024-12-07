@@ -10,5 +10,15 @@
         public string URL { get; set; }
         public string Category { get; set; }
         public string Notes { get; set; }
+
+    public Vault()
+        {
+            ItemName = string.Empty;
+            Username = string.Empty;
+            Password = string.Empty;
+            URL = string.Empty;
+            Category = string.Empty;
+            Notes = string.Empty;
+        } 
     }
 }
