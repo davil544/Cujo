@@ -1,6 +1,7 @@
 ﻿using CujoPasswordManager.DataAccessLayer;
 using CujoPasswordManager.DataModels;
 using System;
+using System.Web.UI.WebControls;
 
 namespace CujoPasswordManager
 {
@@ -45,18 +46,35 @@ namespace CujoPasswordManager
                 {
                     Session["vaultEntry"] = null;
                 }
+                if (!IsPostBack)
+                {
+                    ListItem li1 = new ListItem("&nbsp;Uppercase Letters", "A", true),
+                        li2 = new ListItem("&nbsp;Lowercase Letters", "z", true),
+                        li3 = new ListItem("&nbsp;Numbers", "09", true),
+                        li4 = new ListItem("&nbsp;Special Characters", "@#", true);
+                    li1.Selected = true;
+                    li2.Selected = true;
+                    li3.Selected = true;
+                    li4.Selected = true;
+                    cblSupportedChars.Items.Add(li1);
+                    cblSupportedChars.Items.Add(li2);
+                    cblSupportedChars.Items.Add(li3);
+                    cblSupportedChars.Items.Add(li4);
+                }
             }
         }
 
         protected void BtnAdd_Click(object sender, EventArgs e)
         {
-            entry = new Vault();
-            entry.ItemName = txtItemName.Text;
-            entry.Username = txtUserName.Text;
-            entry.Password = txtPassword.Text;
-            entry.Category = txtCategory.Text;
-            entry.URL = txtURL.Text;
-            entry.Notes = txtNotes.Text;
+            entry = new Vault
+            {
+                ItemName = txtItemName.Text,
+                Username = txtUserName.Text,
+                Password = txtPassword.Text,
+                Category = txtCategory.Text,
+                URL = txtURL.Text,
+                Notes = txtNotes.Text
+            };
 
             // send data to db here
             string status = AccountManager.AddVaultEntry(entry, account.ID, account.password);
@@ -73,15 +91,17 @@ namespace CujoPasswordManager
 
         protected void BtnUpdate_Click(object sender, EventArgs e)
         {
-            Vault updatedEntry = new Vault();
-            updatedEntry.ID = entryID;
-            updatedEntry.UserID = account.ID;
+            Vault updatedEntry = new Vault
+            {
+                ID = entryID,
+                UserID = account.ID,
+                Username = txtEditUserName.Text,
+                Category = txtEditCategory.Text,
+                URL = txtEditURL.Text,
+                Notes = txtEditNotes.Text
+            };
             if (updatedEntry.ItemName != entry.ItemName) { updatedEntry.ItemName = txtEditItemName.Text; }
-            updatedEntry.Username = txtEditUserName.Text;
             if (updatedEntry.Password != entry.Password) { updatedEntry.Password = txtEditPassword.Text; }
-            updatedEntry.Category = txtEditCategory.Text;
-            updatedEntry.URL = txtEditURL.Text;
-            updatedEntry.Notes = txtEditNotes.Text;
 
             //TODO: Add null check for pw field, if so tell the function to skip updating the password, possibly remove null check from it after
 
@@ -98,6 +118,54 @@ namespace CujoPasswordManager
             {
                 Page.ClientScript.RegisterStartupScript(this.GetType(), "CallMyFunction", "window.alert('" + status + "');", true);
             }
+        }
+
+        protected void BtnGenPass_Click(object sender, EventArgs e)
+        {
+            string charset = null, password = null;
+            foreach (ListItem charType in cblSupportedChars.Items)
+            {
+                if (charType.Selected)
+                {
+                    charset += charType.Value;
+                }
+            }
+            if (charset == null || txtPassLength.Text == "") { return; }
+            password = CustomFunctions.GeneratePassword(int.Parse(txtPassLength.Text), charset);
+
+            if (pnlAdd.Visible)
+            {
+                txtPassword.Attributes.Add("value", password);
+                if (txtPassword.TextMode != TextBoxMode.Password) {
+                    txtPassword.Text = password;
+                }
+            }
+            else
+            {
+                txtEditPassword.Attributes.Add("value", password);
+                if (txtEditPassword.TextMode != TextBoxMode.Password)
+                {
+                    txtEditPassword.Text = password;
+                }
+            }
+        }
+
+        protected void BtnShowPass_CLick(object sender, EventArgs e)
+        {
+            if (pnlAdd.Visible)
+            {
+                if (txtPassword.TextMode == TextBoxMode.Password)
+                {
+                    txtPassword.TextMode = TextBoxMode.SingleLine;
+                    btnShowPass.Text = "Hide Password";
+                }
+                else
+                {
+                    txtPassword.TextMode = TextBoxMode.Password;
+                    btnShowPass.Text = "Show Password";
+                }
+            }
+            
         }
 
         protected void BtnCancel_Click(object sender, EventArgs e)
