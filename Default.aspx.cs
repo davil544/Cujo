@@ -19,7 +19,7 @@ namespace CujoPasswordManager
             else
             {
                 account = (Account)Session["account"];
-                Vault[] passwords = AccountManager.GetVault(account.ID);
+                Vault[] passwords = AccountManager.GetVault(account.ID, account.password);
                 Literal litVaultEntries = new Literal();
 
                 foreach (Vault entry in passwords)
