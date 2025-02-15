@@ -1,10 +1,7 @@
 ﻿<%@ Page Title="Vault" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="CujoPasswordManager.Default" %>
 <asp:Content ID="HeadContent" ContentPlaceHolderID="head" runat="server">
     <style>
-        /*May not be necessary, test before deleting
-        * {
-          box-sizing: border-box;
-        }*/
+        /* TODO: Move this into a CSS file so it can be used by the Search Results page */
 
         .column-left {
           float: left;
@@ -58,7 +55,7 @@
                 <td>Username</td>
                 <td>URL</td>
             </tr>
-             <asp:Panel ID="pnlVaultContents" runat="server"></asp:Panel>
+            <asp:Panel ID="pnlVaultContents" runat="server"></asp:Panel>
             <!-- <tr>
                 <td>No Items Found</td>
                 <td>SampleUser</td>
@@ -66,9 +63,4 @@
             </tr> -->
         </table>
     </div> <br /><br /><br />
-    <!-- <br /><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TODO:<br />
-    1)  Build the login page and vault pages<br />
-    2)  Configure SQL database or some other way to store data<br />
-    3)  Create functions to login, read and write vault data<br />
-    4)  Make a way to encrypt and decrypt the data at rest<br /> -->
 </asp:Content>
