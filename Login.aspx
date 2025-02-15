@@ -116,7 +116,7 @@
 <body class="d-flex text-center py-4 bg-body-tertiary">
     <main class="form-signin w-100 m-auto">
         <form id="usersForm" runat="server">
-            <!-- TODO: Replace this with a photo of a guard dog eventually -->
+            <!-- TODO: Replace this with a photo of a guard dog eventually, this is Bootstrap's logo!  Copyright belongs to them for this! -->
             <img class="mb-4" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57" />
 
             <asp:Panel ID="pnlLogin" runat="server">
@@ -160,9 +160,9 @@
 
             <p style="padding-top: 5px;"><asp:Button ID="btnToggleForm" CssClass="btn btn-secondary w-100 py-2" runat="server" OnClick="BtnFormToggle_Click" Text="Create a new account"/></p>
 
-            <p class="mt-5 mb-3 text-body-secondary">&copy; 2024 Dylan Aviles, All Rights Reserved</p>
+            <p class="mt-5 mb-3 text-body-secondary">&copy; <%: DateTime.Now.Year %> Dylan Aviles, All Rights Reserved</p>
         </form>
     </main>
-    <script src="Scripts/bootstrap.bundle.min.js"></script> <!-- Maybe comment this out if not needed? -->
+    <!-- <script src="Scripts/bootstrap.bundle.min.js"></script>  Maybe comment this out if not needed? -->
 </body>
 </html>

@@ -30,6 +30,6 @@
             </tr>
         </table>
         <br /><asp:Button ID="btnEdit" runat="server" Text="Edit Entry" OnClick="BtnEdit_Click" />
-        &nbsp;<asp:Button ID="btnDelete" runat="server" Text="Delete Entry" />
+        &nbsp;<asp:Button ID="btnDelete" runat="server" Text="Delete Entry" Enabled="false" /> <!-- This feature will be implemented in a future update! -->
     </div>
 </asp:Content>
